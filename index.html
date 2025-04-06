@@ -213,10 +213,10 @@
         e.preventDefault();
         cursor.remove();
         handleCommand(inputBuffer);
-        inputBuffer = '';
-        if(!inputBuffer === 'exit'){
+        if(inputBuffer != 'exit'){
+          inputBuffer = '';
           newPrompt();
-        }
+        } return
       } else if (e.key.length === 1) {
         inputBuffer += e.key;
         inputSpan.textContent = inputBuffer;
