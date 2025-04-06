@@ -182,7 +182,7 @@
           case 'exit':
             writeOutput('Exiting terminal... Thanks for visiting!');
             setTimeout(() => {
-              window.location.href = 'https://webdevtreyclark.com';
+              window.close();
             }, 2000);
             break;
           case 'touch':
@@ -214,7 +214,9 @@
         cursor.remove();
         handleCommand(inputBuffer);
         inputBuffer = '';
-        newPrompt();
+        if(!inputBuffer === 'exit'){
+          newPrompt();
+        }
       } else if (e.key.length === 1) {
         inputBuffer += e.key;
         inputSpan.textContent = inputBuffer;
