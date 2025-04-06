@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Terminal</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #edf5ed;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      overflow-y: hidden;
+    }
+
+    #terminal {
+      padding: 1rem;
+      white-space: pre-wrap;
+      outline: none;
+      height: 100vh;
+      overflow-y: hidden;
+    }
+
+    .line {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .cursor {
+      width: 8px;
+      height: 1em;
+      background: #f3f8f3;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal" tabindex="0"></div>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+
+    const files = {
+      "hello.js": "console.log('Hello World!')",
+      "about.txt": "My name is Trey Clark and I am a Full Stack Web Developer. This is a terminal that exists to navigate to my portfolio. ",
+      "portfolio.txt": "Run the script.sh to see my portfolio.",
+      "script.sh": "#!/bin/bash\n\n# This script opens my portfolio\nxdg-open https://www.webdevtreyclark.com",
+      "README.md": "# Fake Terminal\nThis is a simple terminal simulation.\n\n## Commands\n- `help`: Show available commands\n- `ls`: List files\n- `cat <filename>`: Display file content\n- `clear`: Clear the terminal\n- `bash`: Run scripts",
+    };
+
+    let inputBuffer = '';
+    let currentLine = null;
+    let inputSpan = null;
+    let cursor = null;
+
+    function newPrompt() {
+      const promptLine = document.createElement('div');
+      promptLine.classList.add('line');
+
+      const prompt = document.createElement('span');
+      prompt.textContent = 'user@terminal ~ $ ';
+      promptLine.appendChild(prompt);
+
+      inputSpan = document.createElement('span');
+      inputLine = '';
+      promptLine.appendChild(inputSpan);
+
+      cursor = document.createElement('span');
+      cursor.classList.add('cursor');
+      promptLine.appendChild(cursor);
+
+      terminal.appendChild(promptLine);
+      currentLine = promptLine;
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function writeOutput(text) {
+      const lines = text.split('\n');
+      lines.forEach(line => {
+        const div = document.createElement('div');
+        div.textContent = line;
+        terminal.appendChild(div);
+      });
+      scrollToBottom();
+    }
+
+      function handleCommand(command) {
+        const [cmd, ...args] = command.trim().split(' ');
+
+        if (cmd.includes('sudo')) {
+            writeOutput('sudo is not able to be used. You are not an admin. :P');
+            return;
+        }
+        if (cmd === 'exit') {
+          writeOutput('Uhh... I don\'t know how to exit this terminal. Try \'clear\'');
+          return;
+        }
+        if (cmd === 'skip') {
+          window.open('https://www.webdevtreyclark.com', '_blank');
+          return;
+        }
+
+        switch (cmd) {
+          case 'help':
+            writeOutput('Begin by using the command \'cat\' to read the README.md');
+            break;
+          case 'ls':
+            writeOutput(Object.keys(files).join('  '));
+            break;
+          case 'bash':
+            const script = args.join(' ');
+            if (script === 'script.sh') {
+              window.open('https://www.webdevtreyclark.com', '_blank');
+            }
+            else if (script === 'hello.js'){
+              writeOutput('Hello World!')
+            } 
+            else {
+              writeOutput(`bash: ${script}: No such file`);
+            }
+            break;
+          case 'cat':
+            const filename = args.join(' ');
+            if (files[filename]) {
+              writeOutput(files[filename]);
+            } else {
+              writeOutput(`cat: ${filename}: No such file. Try \'cat <filename>\'`);
+            }
+            break;
+          case 'clear':
+            terminal.innerHTML = '';
+            break;
+          case 'touch':
+          case 'mkdir':
+          case 'rm':
+          case 'rmdir':
+            writeOutput(`Permission denied: ${cmd}`);
+            break;
+          default:
+            writeOutput(`${cmd}: command not found`);
+        }
+      }
+
+    terminal.addEventListener('keydown', (e) => {
+      terminal.focus();
+
+      if (!inputSpan) return;
+
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        inputBuffer = inputBuffer.slice(0, -1);
+        inputSpan.textContent = inputBuffer;
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        cursor.remove();
+        handleCommand(inputBuffer);
+        inputBuffer = '';
+        newPrompt();
+      } else if (e.key.length === 1) {
+        inputBuffer += e.key;
+        inputSpan.textContent = inputBuffer;
+      }
+      scrollToBottom();
+    });
+
+    writeOutput("Welcome! Type 'help' to begin or 'skip' to just see my portfolio.");
+    newPrompt();
+    terminal.focus();
+  </script>
+</body>
+</html>
